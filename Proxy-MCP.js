@@ -30,9 +30,30 @@ const PROVIDER_CONFIGS = {
   GROK: {
     name: 'GROK',
     baseURL: 'https://api.x.ai/v1',
-    model: 'grok-2-image-1212',
-    endpoint: '/images/generations',
+    model: 'grok-2-1212',
+    endpoint: '/chat/completions',
     envKey: 'GROK_API_KEY',
+  },
+  DEEPSEEK: {
+    name: 'DEEPSEEK',
+    baseURL: 'https://api.deepseek.com/v1',
+    model: 'deepseek-chat',
+    endpoint: '/chat/completions',
+    envKey: 'DEEPSEEK_API_KEY',
+  },
+  OPENROUTER: {
+    name: 'OPENROUTER',
+    baseURL: 'https://openrouter.ai/api/v1',
+    model: 'deepseek/deepseek-chat',
+    endpoint: '/chat/completions',
+    envKey: 'OPENROUTER_API_KEY',
+  },
+  ZAI: {
+    name: 'ZAI',
+    baseURL: 'https://api.z.ai',
+    model: 'glm-4.7',
+    endpoint: '/v1/chat/completions',
+    envKey: 'ZAI_API_KEY',
   },
 };
 
@@ -559,6 +580,156 @@ app.get('/status', (req, res) => {
 
   res.json(status);
 });
+
+// ============================================================================
+// API ROUTES - Compatibility layer for Somnium/ViaLogos apps
+// ============================================================================
+
+// API Key authentication middleware
+const CLIENT_API_KEY = process.env.MCP_PROXY_API_KEY || 'DC_API_FBv15A4erXjE8eQXc75qbJU1WHcsw77XF27BHE';
+
+function authenticateApiKey(req, res, next) {
+  const providedKey = req.headers['x-api-key'];
+  if (!providedKey || providedKey !== CLIENT_API_KEY) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid API key' });
+  }
+  next();
+}
+
+// Health check endpoint with API key auth
+app.get('/api/requests/health', authenticateApiKey, (req, res) => {
+  res.json({ status: 'ok', timestamp: Date.now() });
+});
+
+// List available providers
+app.get('/api/requests/providers', authenticateApiKey, (req, res) => {
+  const providers = {
+    chat: [],
+    image: ['POLLINATIONS', 'MESHY', 'CLOUDFLARE'],
+  };
+
+  for (const [key, config] of Object.entries(PROVIDER_CONFIGS)) {
+    if (process.env[config.envKey]) {
+      providers.chat.push(key);
+    }
+  }
+
+  res.json({ data: { providers } });
+});
+
+// Chat completion endpoint (OpenAI-compatible format)
+app.post('/api/requests/chat', authenticateApiKey, async (req, res) => {
+  const { provider, messages, systemInstruction, jsonMode = false, temperature = 0.8, response_id } = req.body;
+
+  const providerUpper = (provider || 'GROK').toUpperCase();
+  const config = PROVIDER_CONFIGS[providerUpper];
+
+  if (!config) {
+    return res.status(400).json({ error: `Unsupported provider: ${provider}` });
+  }
+
+  const apiKey = getApiKey(providerUpper);
+  if (!apiKey) {
+    return res.status(500).json({ error: `API key not configured for provider: ${provider}` });
+  }
+
+  try {
+    // Build messages array
+    const apiMessages = [];
+    if (systemInstruction) {
+      apiMessages.push({ role: 'system', content: systemInstruction });
+    }
+    apiMessages.push(...messages);
+
+    // GROK conversation continuation support
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    };
+
+    // GROK-specific: add response_id for conversation continuity
+    let requestBody = {
+      model: config.model,
+      messages: apiMessages,
+      temperature,
+    };
+
+    // Handle GROK's response_id for conversation continuity
+    if (providerUpper === 'GROK' && response_id) {
+      // For GROK with response_id, we only send the new message
+      const lastUserMessage = messages.filter(m => m.role === 'user').slice(-1)[0];
+      requestBody = {
+        model: config.model,
+        messages: systemInstruction
+          ? [{ role: 'system', content: systemInstruction }, { role: 'user', content: lastUserMessage.content }]
+          : [{ role: 'user', content: lastUserMessage.content }],
+        temperature,
+      };
+    }
+
+    // Add jsonMode for structured output
+    if (jsonMode) {
+      requestBody.response_format = { type: 'json_object' };
+    }
+
+    const response = await axios.post(
+      `${config.baseURL}${config.endpoint}`,
+      requestBody,
+      { headers, timeout: 30000 }
+    );
+
+    const responseText = response.data?.choices?.[0]?.message?.content || '';
+    const grokResponseId = response.data?.id; // GROK returns an ID for conversation continuity
+
+    res.json({
+      data: {
+        text: responseText,
+        provider: providerUpper,
+        response_id: grokResponseId,
+      },
+    });
+  } catch (error) {
+    const errorMsg = error.response
+      ? `API error ${error.response.status}: ${JSON.stringify(error.response.data)}`
+      : error.message;
+    res.status(500).json({ error: errorMsg });
+  }
+});
+
+// Image generation endpoint (ViaLogos/Somnium format)
+app.post('/api/requests/image', authenticateApiKey, async (req, res) => {
+  const { provider, bibleVerse, sceneContext, theme, imageSpecifics } = req.body;
+
+  // Translate ViaLogos/Somnium format to proxy format
+  const proxyRequest = {
+    characterName: bibleVerse || 'Scene',
+    characterDesc: sceneContext || '',
+    context: sceneContext || '',
+    theme: theme || 'realistic',
+    imageSpecifics,
+  };
+
+  try {
+    const result = await generateImageWithFallback(proxyRequest);
+
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    res.json({
+      data: {
+        url: result.url,
+        provider: result.provider,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: `Image generation error: ${error.message}` });
+  }
+});
+
+// ============================================================================
+// START SERVER
+// ============================================================================
 
 app.listen(port, () => {
   console.log(`MCP Server listening on port ${port}`);
