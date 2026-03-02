@@ -8,6 +8,20 @@ const port = process.env.PORT || 3000;
 // Middleware for JSON parsing
 app.use(bodyParser.json());
 
+// CORS Middleware - Allow requests from any origin for development
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Client-API-Key');
+  res.header('Access-Control-Allow-Credentials', 'true');
+
+  // Handle preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Restricted AI provider/model
 const RESTRICTED_AI = 'restricted-provider';
 
