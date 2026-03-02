@@ -1,0 +1,117 @@
+// server_scripts/mob_drops.js
+// VoidCore: Skybound Engineering
+// Custom Mob Drop System
+
+// ============================================
+// FOX EMERALD DROPS (Early-Game Emerald Source)
+// ============================================
+
+EntityDeathEvents.event(event => {
+    if (event.entity.type === 'minecraft:fox') {
+        // 7.5% chance for 1 emerald
+        const dropChance = 0.075
+
+        if (Math.random() < dropChance) {
+            // Spawn emerald at fox's location
+            event.entity.level.spawnEntity(
+                'minecraft:item',
+                event.entity.x,
+                event.entity.y,
+                event.entity.z,
+                {
+                    Item: { id: 'minecraft:emerald', Count: 1 }
+                }
+            )
+
+            // Notify nearby players
+            event.entity.playersInRange.forEach(player => {
+                player.tell('§aA fox dropped an emerald!§r')
+            })
+        }
+    }
+})
+
+// ============================================
+// BABY ZOMBIE GOLD DROPS (For Villager Curing)
+// ============================================
+
+EntityDeathEvents.event(event => {
+    if (event.entity.type === 'minecraft:zombie' && event.entity.isBaby()) {
+        // 5% chance for 1-3 gold nuggets
+        const dropChance = 0.05
+
+        if (Math.random() < dropChance) {
+            const amount = Math.floor(Math.random() * 3) + 1 // 1-3 gold nuggets
+
+            // Spawn gold nuggets
+            event.entity.level.spawnEntity(
+                'minecraft:item',
+                event.entity.x,
+                event.entity.y,
+                event.entity.z,
+                {
+                    Item: { id: 'minecraft:gold_nugget', Count: amount }
+                }
+            )
+
+            // Notify nearby players
+            event.entity.playersInRange.forEach(player => {
+                player.tell(`§eA baby zombie dropped ${amount} gold nugget(s)!§r`)
+            })
+        }
+    }
+})
+
+// ============================================
+// ADULT ZOMBIE REFINED IRON DROPS (For Machine Cores)
+// ============================================
+
+EntityDeathEvents.event(event => {
+    if (event.entity.type === 'minecraft:zombie' && !event.entity.isBaby()) {
+        // 5% chance for 1 Refined Iron
+        const dropChance = 0.05
+
+        if (Math.random() < dropChance) {
+            // Spawn Refined Storage Quartz Enriched Iron
+            event.entity.level.spawnEntity(
+                'minecraft:item',
+                event.entity.x,
+                event.entity.y,
+                event.entity.z,
+                {
+                    Item: { id: 'refinedstorage:quartz_enriched_iron', Count: 1 }
+                }
+            )
+
+            // Notify nearby players
+            event.entity.playersInRange.forEach(player => {
+                player.tell('§7A zombie dropped Refined Iron!§r')
+            })
+        }
+    }
+})
+
+// ============================================
+// WITCHES ARE ENTIRELY VANILLA
+// ============================================
+
+// No custom witch drops or modifications needed
+// Witches naturally throw weakness potions at players with ≤66% health
+// This vanilla mechanic is used for villager curing progression
+
+// ============================================
+// MACHINE CORE DROPS FROM MACHINES
+// ============================================
+
+// Note: Machine Cores are obtained by crafting machines
+// This is handled in the recipe system, not as mob drops
+// When a player crafts a machine, they should get Machine Cores as bonus
+
+// Example: Listen for crafting events and give Machine Cores
+// This would be implemented with a crafting table wrapper or recipe event
+
+console.log('VoidCore: Mob drop system initialized!')
+console.log('VoidCore: Fox emerald drops: 7.5% chance')
+console.log('VoidCore: Baby zombie gold nugget drops: 5% chance for 1-3')
+console.log('VoidCore: Adult zombie Refined Iron drops: 5% chance')
+console.log('VoidCore: Pigs + lightning = Zombie Piglins (primary gold source)')

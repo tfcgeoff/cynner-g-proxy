@@ -1,0 +1,253 @@
+// server_scripts/quests_corrected.js
+// VoidCore: Skybound Engineering
+// CORRECTED Quest Progression (Grass Island → Pigs → Zombie Piglins → Gold → Oak → Villagers → Lava → Cobblestone)
+
+ServerEvents.event('ftbquests.init', event => {
+    const quests = [
+        // ============================================
+        // CHAPTER 1: THE GRASS ISLAND
+        // ============================================
+        {
+            quest_id: "welcome_void",
+            title: "Welcome to the Void",
+            subtitle: "Read the guidebook",
+            description: "You spawn on a 3x3x2 grass island with a single tree. The tree is acacia, spruce, or birch (NOT oak).$(br)$(br)Your journey: Mine tree → Build mob farm → Breed pigs → Zombie piglins → Gold → Buy oak → Villagers → Lava → Cobblestone!",
+            icon: "patchouli:guide_book",
+            tasks: [
+                {
+                    type: "item",
+                    item: "patchouli:guide_book",
+                    count: 1,
+                    consume_items: false
+                }
+            ],
+            rewards: [
+                {
+                    type: "item",
+                    item: "minecraft:grass_block",
+                    count: 8
+                }
+            ],
+            x: 0,
+            y: 0
+        },
+        {
+            quest_id: "mine_tree",
+            title: "Mine the Tree",
+            subtitle: "Your first resource",
+            description: "Mine your starting tree repeatedly. It won't despawn!$(br)$(br)Get wood for:$(li)Crafting table$(li)Wooden tools$(li)Chests$(br)$(br)$(warning)Remember: The tree is acacia/spruce/birch - NOT oak!",
+            icon: "minecraft:oak_log",
+            tasks: [
+                {
+                    type: "item",
+                    item: "minecraft:oak_log",
+                    count: 16,
+                    consume_items: false
+                }
+            ],
+            rewards: [
+                {
+                    type: "item",
+                    item: "minecraft:oak_sapling",
+                    count: 4
+                }
+            ],
+            x: 1,
+            y: 0
+        },
+        {
+            quest_id: "build_platform",
+            title: "Build Platforms",
+            subtitle: "Expand your island",
+            description: "Build grass block platforms to expand your island:$(br)$(task)How:$(li)Break grass blocks (can be done by hand!)$(li)Place blocks to extend your island$(li)Build mob spawning platform 24+ blocks away$(br)$(br)$(item)Grass blocks breakable by hand - no tools needed!$()",
+            icon: "minecraft:grass_block",
+            tasks: [
+                {
+                    type: "item",
+                    item: "minecraft:grass_block",
+                    count: 32,
+                    consume_items: false
+                }
+            ],
+            rewards: [
+                {
+                    type: "item",
+                    item: "minecraft:oak_sapling",
+                    count: 4
+                }
+            ],
+            x: 2,
+            y: 0
+        },
+        {
+            quest_id: "move_grass",
+            title: "Move Grass to Spawn Animals",
+            subtitle: "Get those pigs!",
+            description: "Move grass blocks OUT of your spawn chunk:$(br)$(task)Why?$(li)Animals only spawn on grass in loaded chunks$(li)Spawn chunk = where you first spawned$(li)Move grass away = new spawn points for pigs, sheep, cows, chickens$(br)$(br)$(item)Place grass 100+ blocks away and wait for animals to spawn!$()",
+            icon: "minecraft:grass_path",
+            tasks: [
+                {
+                    type: "item",
+                    item: "minecraft:pig",
+                    count: 1,
+                    consume_items: false
+                }
+            ],
+            rewards: [
+                {
+                    type: "item",
+                    item: "minecraft:carrot",
+                    count: 8
+                }
+            ],
+            x: 3,
+            y: 0
+        },
+
+        // ============================================
+        // CHAPTER 2: ZOMBIE PIGLINS → GOLD
+        // ============================================
+        {
+            quest_id: "pig_breeding",
+            title: "Pig Breeding",
+            subtitle: "Pigs are your goldmine",
+            description: "Get carrots and breed pigs:$(br)$(task)1. Get carrots (zombie drops, wandering trader)$(br)$(task)2. Craft bonemeal$(br)$(task)3. Breed pigs like crazy!$(br)$(br)$(item)This is the foundation of your gold economy!$()",
+            icon: "minecraft:carrot_on_a_stick",
+            tasks: [
+                {
+                    type: "item",
+                    item: "minecraft:pig",
+                    count: 4,
+                    consume_items: false
+                }
+            ],
+            rewards: [
+                {
+                    type: "item",
+                    item: "minecraft:golden_carrot",
+                    count: 8
+                }
+            ],
+            x: 0,
+            y: 1
+        },
+        {
+            quest_id: "zombie_piglin",
+            title: "Zombie Piglin",
+            subtitle: "The gold machine",
+            description: "Make zombie piglins:$(br)$(task)1. Kill zombies for COPPER$(br)$(task)2. Craft lightning rod (3 copper + 1 stick)$(br)$(task)3. Strike pig with lightning OR wait for thunderstorm$(br)$(br)$(item)Zombie Piglins + Baby Zombies = GOLD!$()",
+            icon: "minecraft:golden_sword",
+            tasks: [
+                {
+                    type: "item",
+                    item: "minecraft:zombified_piglin",
+                    count: 1,
+                    consume_items: false
+                }
+            ],
+            rewards: [
+                {
+                    type: "item",
+                    item: "minecraft:gold_ingot",
+                    count: 8
+                }
+            ],
+            x: 1,
+            y: 1
+        },
+        {
+            quest_id: "gold_farm",
+            title: "Gold Farm",
+            subtitle: "Your gold income",
+            description: "Start your gold farm:$(br)$(task)1. Make zombie piglins$(br)$(task)2. Feed them golden carrots (taming)$(br)$(task)3. Kill adult zombie piglins to reset their breeding$(br)$(br)$(item)Kill baby zombie piglins for gold drops!$()",
+            icon: "minecraft:gold_ingot",
+            tasks: [
+                {
+                    type: "item",
+                    item: "minecraft:gold_ingot",
+                    count: 32,
+                    consume_items: false
+                }
+            ],
+            rewards: [
+                {
+                    type: "item",
+                    item: "minecraft:golden_carrot",
+                    count: 16
+                }
+            ],
+            x: 2,
+            y: 1
+        },
+
+        // ============================================
+        // CHAPTER 3: VILLAGER ECONOMY
+        // ============================================
+        {
+            quest_id: "find_oak",
+            title: "Find Oak",
+            subtitle: "You need apples for golden apples",
+            description: "Buy oak saplings from wandering trader:$(br)$(br)Your starting tree (acacia/spruce/birch) does NOT drop apples.$(br)$(br)$(task)Wait for wandering trader to spawn nearby$(br)$(task)Trade crops for emeralds$(br)$(task)Buy oak saplings when available!$(br)$(br)$(item)Oak trees = Apples = Golden Apples = Villager Curing!$()"
+        },
+        {
+            quest_id: "witch_weakness",
+            title: "Witch Weakness",
+            subtitle: "The potion you need",
+            description: "Witches spawn on your mob farm naturally.$(br)$(task)How to Get Weakness Potion:$(li)Stand near witch with ≤66% health$(li)Let witch throw splash potion at you$(li)Get Weakness II effect$(br)$(br)$(warning)Don't kill the witch! It throws weakness repeatedly at low HP.$()",
+            icon: "minecraft:potion",
+            tasks: [
+                {
+                    type: "item",
+                    item: "minecraft:potion",
+                    count: 1,
+                    consume_items: false
+                }
+            ],
+            x: 0,
+            y: 2
+        },
+        {
+            quest_id: "cure_villager",
+            title: "Cure Zombie Villager",
+            subtitle: "Trading hall begins",
+            description: "Cure your first zombie villager:$(br)$(task)1. Find zombie villager on mob farm$(br)$(task)2. Get hit by witch weakness splash potion$(br)$(task)3. Use golden apple on zombie villager$(br)$(task)4. Wait for cure (takes a few minutes)$(br)$(br)$(item)All cured villagers have permanent discounts!$()"
+        },
+        {
+            quest_id: "trading_hall",
+            title: "Trading Hall",
+            subtitle: "5 cured villagers",
+            description: "Build a trading hall with 5+ cured villagers:$(br)$(br)$(task)Different professions = different trades$(br)$(br)$(item)Good Professions for Emeralds:$(li)Farmer (buys crops)$(li)Librarian (sells books/guidebooks)$(li)Cleric (buys mob drops)$(li)$(li)Shepherd (buys wool/emeralds)$(br)$(br)$(item)Build up to 100 emeralds!$()"
+        },
+
+        // ============================================
+        // CHAPTER 4: LAVA & COBBLESTONE
+        // ============================================
+        {
+            quest_id: "hundred_emeralds",
+            title: "100 Emeralds",
+            subtitle: "The lava goal",
+            description: "Earn 100 emeralds total:$(br)$(br)Your emerald sources:$(li)Fox hunting (7.5% per fox)$(li)Sell crops to villagers$(li)Sell iron/gold/drops$(li)Trade wandering trader$(br)$(br)$(item)This is your biggest grind yet!$()"
+        },
+        {
+            quest_id: "lava_merchant",
+            title: "The Lava Merchant",
+            subtitle: "Ignis the Obsidian Merchant",
+            description: "Find the Lava Merchant NPC on a platform near spawn.$(br)$(br)Trade 100 emeralds for:$(br)$(li)$(ore)1 Lava Bucket$(ore) (The Big Purchase!)$(li)1 Blaze Rod (50 emeralds)$(li)1 Nether Star (500 emeralds)$(li)1 Charged Certus Quartz (25 emeralds)$(li)1 Ender Pearl (10 emeralds)$(br)$(item)You've unlocked the rest of the game!$()"
+        },
+        {
+            quest_id: "cobblestone_gen",
+            title: "Cobblestone Generator",
+            subtitle: "Infinite stone at last!",
+            description: "NOW you can make a cobblestone generator!$(br)$(br)$(task)How:$(li)Place water on one block$(li)Place lava on adjacent block$(li)Mine the cobblestone where they meet$(li)$(br)$(br)$(ore)Infinite stone! The real game begins now!$()"
+        },
+        {
+            quest_id: "nether_portal",
+            title: "Enter Nether",
+            subtitle: "New dimension",
+            description: "Create obsidian:$(br)Pour lava over water = obsidian$(br)Mine obsidian with diamond or netherite pickaxe$(br)Build 4x5 portal frame$(br)Light with flint & steel$(br)$(br)$(ore)The Nether awaits!$(ore)"
+        }
+    ]
+
+    console.log('VoidCore: Corrected quest progression loaded!')
+    console.log('VoidCore: Grass Island → Pigs → Zombie Piglins → Gold → Oak → Villagers → Lava → Cobblestone!')
+})

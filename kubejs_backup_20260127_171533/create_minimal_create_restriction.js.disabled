@@ -1,0 +1,173 @@
+// server_scripts/create_minimal_create_restriction.js
+// VoidCore: Skybound Engineering
+// Remove all Create items EXCEPT steam engine, rails, and mechanical power
+
+ServerEvents.recipes(event => {
+
+    console.log('VoidCore: Restricting Create: Steam and Rails to MINIMAL...')
+
+    // ============================================
+    // REMOVE ALL CREATE ITEMS EXCEPT STEAM/RAIL COMPONENTS
+    // ============================================
+
+    // Processing Machines (REMOVE)
+    const createProcessingMachines = [
+        'create:millstone',
+        'create:mixer',
+        'create:mechanical_crafter',
+        'create:deployer',
+        'create:extruder',
+        'create:roller',
+        'create:mechanical_press',
+        'create:squeezer'
+    ]
+
+    createProcessingMachines.forEach(machine => {
+        event.remove({ type: 'create:' + machine })
+    })
+
+    // Automation (REMOVE)
+    const createAutomation = [
+        'create:mechanical_arm',
+        'create:weighted_ejector',
+        'create:deployer'
+    ]
+
+    createAutomation.forEach(machine => {
+        event.remove({ type: 'create:' + machine })
+    })
+
+    // Copper tools (REMOVE - use vanilla/Mekanism/Ender IO tools)
+    event.remove({ output: 'create:copper_pickaxe' })
+    event.remove({ output: 'create:copper_axe' })
+    event.remove({ output: 'create:copper_shovel' })
+    event.remove({ output: 'create:copper_hoe' })
+    event.remove({ output: 'create:copper_sword' })
+
+    // ============================================
+    // KEEP: STEAM POWER ITEMS
+    // ============================================
+
+    // These are the ONLY Create recipes we're keeping
+
+    // Hand Crank Generator (powers steam engine)
+    // Keep vanilla recipe (Iron + Iron Rod + Wooden Gear)
+    // No changes needed
+
+    // Steam Engine (uses steam to generate RF/t)
+    // Keep vanilla recipe
+    // Requires: Steam Flywheel + Steam Engine Gauge + Steam Heater + Safety Valve
+
+    // Steam Flywheel (stores steam power)
+    // Keep vanilla recipe
+
+    // Steam Engine Gauge (shows steam pressure)
+    // Keep vanilla recipe
+
+    // Steam Heater (boils water into steam)
+    // Keep vanilla recipe
+
+    // Safety Valve (prevents explosion)
+    // Keep vanilla recipe
+
+    // ============================================
+    // KEEP: RAIL TRANSPORT ITEMS
+    // ============================================
+
+    // Rail
+    event.shaped('minecraft:rail', [
+        'I I ',
+        'S S ',
+        'I I '
+    ], {
+        I: 'minecraft:iron_ingot',
+        S: 'minecraft:stick'
+    }).id('kubejs:create_rail_keep')
+
+    // Rail Bed
+    event.shaped('create:rail_bed', [
+        'SSS',
+        'SBS',
+        'S S '
+    ], {
+        S: 'create:sergeant_shears',
+        B: 'create:mechanical_piston',
+        space: 'minecraft:iron_ingot'
+    }).id('kubejs:create_rail_bed_keep')
+
+    // Rail Crossing
+    event.shaped('create:rail_crossing', [
+        ' S ',
+        'S S ',
+        'SSS'
+    ], {
+        S: 'create:stocked_wooden_button',
+        space: 'minecraft:iron_ingot'
+    }).id('kubejs:create_rail_crossing_keep')
+
+    // Rail Switch
+    event.shaped('create:track_switch', [
+        'SIS',
+        'S S ',
+        'S S '
+    ], {
+        S: 'create:standard_wooden_slab',
+        I: 'create:iron_sheet',
+        space: 'minecraft:redstone'
+    }).id('kubejs:create_rail_switch_keep')
+
+    // Rail Detector
+    event.shaped('create:track_station', [
+        ' B ',
+        'BdB',
+        '   '
+    ], {
+        B: 'create:stocked_wooden_button',
+        d: 'create:detector_track',
+        b: 'minecraft:iron_ingot'
+    }).id('kubejs:create_rail_detector_keep')
+
+    // Train Coupler (connects minecarts)
+    event.shaped('create:train_coupler', [
+        ' I ',
+        'ICI',
+        ' I '
+    ], {
+        I: 'minecraft:iron_ingot',
+        C: 'create:reinforced_log',
+        space: 'minecraft:iron_ingot'
+    }).id('kubejs:create_train_coupler_keep')
+
+    // Minecart (if Create adds one)
+    // Keep if it exists, or remove if not needed
+
+    // ============================================
+    // KEEP: MECHANICAL COMPONENTS (needed for steam engine)
+    // ============================================
+
+    // Mechanical Piston (needed for steam engine)
+    // Keep vanilla recipe
+
+    // Mechanical Piston Rod (needed for mechanical piston)
+    // Keep vanilla recipe
+
+    // Mechanical Bearing (redstone component)
+    // Keep vanilla recipe
+
+    // Container (holds fluids like water for steam engine)
+    // Keep vanilla recipe
+
+    // ============================================
+    // REMOVE COPPER TOOLS (use vanilla instead)
+    // ============================================
+
+    // Remove Create copper tools if they exist
+    event.remove({ output: 'create:copper_pickaxe' })
+    event.remove({ output: 'create:copper_axe' })
+    event.remove({ output: 'create:copper_shovel' })
+    event.remove({ output: 'create:copper_hoe' })
+    event.remove({ output: 'create:copper_sword' })
+
+    console.log('VoidCore: Create restricted to steam/rails only!')
+    console.log('VoidCore: All other Create items removed!')
+})

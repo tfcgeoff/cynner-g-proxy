@@ -1,0 +1,149 @@
+// server_scripts/void_dimensions.js
+// VoidCore: Skybound Engineering
+// Void World Generation for Overworld and Nether
+// Structures remain, but terrain is void
+
+ServerEvents.highPriorityData(event => {
+
+    console.log('VoidCore: Configuring void dimensions...')
+
+    // ============================================
+    // OVERWORLD VOID WORLD TYPE
+    // ============================================
+
+    event.addJson('kubejs:dimension_type/overworld_void.json', {
+        ultrawarm: false,
+        natural: false,
+        coordinate_scale: 1.0,
+        ambient_light: 0.0,
+        has_fixed_time: true,
+        monster_spawn_light_level: 0,
+        monster_spawn_block_light_limit: 0,
+        logical_height: 384,
+        infiniburn: 'minecraft:infiniburn_overworld',
+        effects: 'minecraft:overworld',
+        has_raids: true,
+        respawn_anchor_works: true,
+        min_y: -64,
+        height: 384,
+        has_skylight: true,
+        bed_works: true,
+        piglin_safe: false,
+        players_sleep: true,
+        explosion_resistant: false
+    })
+
+    // ============================================
+    // NETHER VOID DIMENSION
+    // ============================================
+    // Void terrain, but structures (fortresses, bastions) remain
+    // Players spawn on platforms at structure locations
+    // Challenge: Clear structures before using them!
+
+    event.addJson('kubejs:dimension_type/nether_void.json', {
+        ultrawarm: true,
+        natural: false,
+        coordinate_scale: 1.0,
+        ambient_light: 0.1,
+        has_fixed_time: false,
+        monster_spawn_light_level: 7,
+        monster_spawn_block_light_limit: 15,
+        logical_height: 256,
+        infiniburn: 'minecraft:infiniburn_nether',
+        effects: 'minecraft:the_nether',
+        has_raids: false,
+        respawn_anchor_works: true,
+        min_y: 0,
+        height: 256,
+        has_skylight: false,
+        bed_works: false,
+        piglin_safe: true,
+        players_sleep: false,
+        explosion_resistant: false
+    })
+
+    // ============================================
+    // NETHER VOID WORLD GENERATION
+    // ============================================
+
+    event.addJson('kubejs:worldgen/biome/nether_void_biome.json', {
+        type: 'minecraft:biome',
+        effects: {
+            sky_color: 2552096,
+            fog_color: 3402143,
+            water_color: 4159201,
+            water_fog_color: 329011,
+            grass_color: 16777215,
+            foliage_color: 16777215
+        },
+        precipitation: 'none',
+        temperature: 2.0,
+        temperature_modifier: 'none',
+        downfall: 0.0,
+        has_precipitation: false,
+        creature_spawn_probability: 0.1
+    })
+
+    // ============================================
+    // SPAWN PLATFORMS
+    // ============================================
+
+    // Overworld spawn platform (grass start)
+    // Already handled by world generation
+
+    // Nether spawn platform (at fortress or bastion)
+    // Handled by structure generation + platforms
+
+    console.log('VoidCore: Void dimensions configured!')
+    console.log('VoidCore: Overworld void + grass island start')
+    console.log('VoidCore: Nether void + structures only')
+    console.log('VoidCore: Players must clear Nether structures!')
+
+})
+
+// ============================================
+// WORLD GENERATION EVENTS
+// ============================================
+
+WorldGenEvents.remove(event => {
+    // Remove default terrain generation
+    // We want void with structures only
+
+    console.log('VoidCore: Removing default terrain...')
+})
+
+WorldGenEvents.add(event => {
+    console.log('VoidCore: Adding void world generation...')
+
+    // ============================================
+    // OVERWORLD VOID
+    // ============================================
+    // Remove all ore generation, caves, etc.
+    // Only spawn platform generates
+
+    // Remove all ore features
+    // event.removeFeature('minecraft:ore', [~minecraft:ORE_FEATURES])
+
+    // Remove all fluids (lava lakes, water lakes)
+    // event.removeFeature('minecraft:lake', ['minecraft:lake_lava', 'minecraft:lake_water'])
+
+    // ============================================
+    // NETHER VOID
+    // ============================================
+    // Remove all nether terrain features
+    // Keep structures (fortresses, bastions, etc.)
+
+    // Remove nether ores
+    // event.removeFeature('minecraft:nether_ore', [~minecraft:ORE_FEATURES])
+
+    // Remove lava seas
+    // event.removeFeature('minecraft:lake', ['minecraft:lake_lava_surface'])
+
+    // Keep structures!
+    // - Nether Fortresses
+    // - Bastions
+    // - Ruined Portals
+    // - Nether Fossils
+
+    console.log('VoidCore: Void generation configured!')
+})

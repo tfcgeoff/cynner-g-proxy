@@ -1,0 +1,118 @@
+// server_scripts/machine_consolidation.js
+// VoidCore: Skybound Engineering
+// Remove duplicate machines and force interconnectedness
+
+ServerEvents.recipes(event => {
+
+    console.log('VoidCore: Removing duplicate machines...')
+
+    // ============================================
+    // POWER GENERATION - REMOVE DUPLICATES
+    // ============================================
+
+    // Remove Mekanism Heat Generator (use IE Coal Generator)
+    event.remove({ type: 'mekanism:heat_generator' })
+
+    // Remove Ender IO Stirling Generator (use IE Coal Generator)
+    event.remove({ id: 'enderio:stirling_generator' })
+
+    // Remove Create Steam Engine (use IE Coal Generator)
+    event.remove({ type: 'create:steam_engine' })
+
+    // Remove Mekanism Bio Generator (use IE equivalents)
+    event.remove({ type: 'mekanism:bio_generator' })
+
+    // Remove Ender IO Combustion Generator (use IE Diesel Generator)
+    event.remove({ id: 'enderio:combustion_generator' })
+
+    // Remove Create Diesel Engine (use IE Diesel Generator)
+    event.remove({ type: 'create:diesel_engine' })
+
+    // Remove Mekanism Wind Generator (use IE Windmill)
+    event.remove({ type: 'mekanism:wind_generator' })
+
+    // Remove Create Windmill (use IE Windmill)
+    event.remove({ type: 'create:windmill' })
+
+    // Remove Create Water Wheel (use IE Water Wheel)
+    event.remove({ type: 'create:water_wheel' })
+
+    // ============================================
+    // ORE PROCESSING - RESTRICT MEKANISM
+    // ============================================
+
+    // Remove Mekanism Enrichment Chamber (keep ONLY for 4x+ tier)
+    // This requires more complex handling - we'll reconfigure it
+    // For now, remove the basic recipe - will add gated recipe later
+
+    // Remove Create Millstone (use Ender IO Sag Mill)
+    event.remove({ type: 'create:milling' })
+
+    // Remove Mekanism Metallurgic Infuser (use Tinkers Smeltery)
+    event.remove({ type: 'mekanism:infusing' })
+
+    // ============================================
+    // METAL WORKING - REMOVE DUPLICATES
+    // ============================================
+
+    // Remove Mekanism Energized Smelter (use Ender IO Powered Furnace)
+    event.remove({ type: 'mekanism:energizing_smelter' })
+
+    // Remove IE Blast Furnace (use Tinkers Smeltery for steel)
+    event.remove({ type: 'immersiveengineering:blast_furnace' })
+
+    // Remove Ender IO Alloy Smelter (use Tinkers Smeltery)
+    event.remove({ type: 'enderio:alloy_smelter' })
+
+    // ============================================
+    // TRANSPORT PIPES - REMOVE DUPLICATES
+    // ============================================
+
+    // Remove Mekanism Mechanical Pipes (use Ender IO Conduits for items)
+    event.remove({ type: 'mekanism:basic_mechanical_pipe' })
+    event.remove({ type: 'mekanism:advanced_mechanical_pipe' })
+
+    // Remove Create Fluid Pipes (use IE Fluid Pipes)
+    event.remove({ type: 'create:fluid_pipe' })
+
+    // Remove Mekanism Universal Cables (use Ender IO Energy Conduits)
+    event.remove({ type: 'mekanism:basic_universal_cable' })
+    event.remove({ type: 'mekanism:advanced_universal_cable' })
+    event.remove({ type: 'mekanism:elite_universal_cable' })
+    event.remove({ type: 'mekanism:ultimate_universal_cable' })
+
+    // ============================================
+    // TOOLS - REMOVE DUPLICATES
+    // ============================================
+
+    // Remove Ender IO basic tools (use Mekanism Tools)
+    event.remove({ output: 'enderio:iron_pickaxe' })
+    event.remove({ output: 'enderio:iron_axe' })
+    event.remove({ output: 'enderio:iron_shovel' })
+    event.remove({ output: 'enderio:iron_hoe' })
+    event.remove({ output: 'enderio:iron_sword' })
+
+    // Remove Ender IO advanced tools
+    event.remove({ output: 'enderio:dark_steel_pickaxe' })
+    event.remove({ output: 'enderio:dark_steel_axe' })
+    event.remove({ output: 'enderio:dark_steel_shovel' })
+    event.remove({ output: 'enderio:dark_steel_sword' })
+
+    // ============================================
+    // FARMING - REMOVE DUPLICATES
+    // ============================================
+
+    // Remove Create Harvester (use IE Garden Cloche)
+    event.remove({ type: 'create:harvester' })
+
+    // ============================================
+    // ENERGY STORAGE - RESTRICT DON'T REMOVE
+    // ============================================
+
+    // We're NOT removing energy storage, just gating progression
+    // Each tier requires previous tier to craft
+    // This is handled in cross_mod_recipes.js
+
+    console.log('VoidCore: Duplicate machine removal complete!')
+    console.log('VoidCore: Players must progress through all mods!')
+})

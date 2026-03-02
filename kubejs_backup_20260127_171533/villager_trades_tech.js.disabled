@@ -1,0 +1,63 @@
+// server_scripts/villager_trades_tech.js
+// VoidCore: Skybound Engineering
+// Villager Trade Modifications - Keep Enchanted Books as Blueprints!
+
+// KubeJS doesn't have a direct VillagerTradesEvent like the old Forge version
+// Enchanted books are now "ancient blueprints" sold by villagers as research papers
+
+ServerEvents.recipes(event => {
+
+    console.log('VoidCore: Villager trades - enchanted books are blueprints!')
+
+    // Note: Enchanted books can be obtained from:
+    // - Librarian villagers (selling "ancient blueprints")
+    // - Chest loot
+    // - Fishing (including IE Fishing)
+    // - Mob drops
+
+    console.log('VoidCore: Villagers trade enchanted books as "research papers"!')
+
+})
+
+// ============================================
+// LOOT TABLE MODIFICATIONS
+// ============================================
+// Remove potions from loot, but KEEP enchanted books (they're blueprints!)
+
+LootEvent.modify(event => {
+
+    console.log('VoidCore: Cleaning up loot tables...')
+
+    // Remove potions from chest loot (potions are magical)
+    const potionLootTables = [
+        'minecraft:chests/abandoned_mineshaft',
+        'minecraft:chests/igloo_chest',
+        'minecraft:chests/shipwreck',
+        'minecraft:chests/village/village_temple'
+    ]
+
+    potionLootTables.forEach(table => {
+        try {
+            event.modifyLootTable(table, lootTable => {
+                lootTable.removeEntry(entry => {
+                    const item = entry.getItem()
+                    return item && (item.includes('potion') ||
+                                    item.includes('splash_potion') ||
+                                    item.includes('lingering_potion'))
+                })
+            })
+        } catch (e) {
+            // Some loot tables may not exist, skip them
+        }
+    })
+
+    // ENCHANTED BOOKS ARE KEPT - they are "ancient blueprints"!
+    // They can be found in chests and used for crafting tech upgrades
+
+    console.log('VoidCore: Potions removed from loot tables!')
+    console.log('VoidCore: Enchanted books KEPT - they are ancient blueprints!')
+
+})
+
+console.log('VoidCore: Villager trade modifications configured!')
+console.log('VoidCore: Enchanted books are obtainable from villagers and loot')

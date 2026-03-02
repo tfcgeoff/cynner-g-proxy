@@ -1,0 +1,124 @@
+// server_scripts/witch_modifications.js
+// VoidCore: Skybound Engineering
+// Witch Modifications - Throw Aesthetics, Keep Enchanted Books as Rare Blueprints
+
+ServerEvents.recipes(event => {
+
+    console.log('VoidCore: Modifying witch behavior...')
+
+    // ============================================
+    // REMOVE BREWING STAND
+    // ============================================
+
+    // Remove brewing stand recipe
+    event.remove({ output: 'minecraft:brewing_stand' })
+
+    // Remove all brewing recipes
+    event.remove({ type: 'minecraft:brewing' })
+    event.remove({ mod: 'brewing' })
+
+    console.log('VoidCore: Brewing stand removed!')
+
+})
+
+// ============================================
+// WITCH DEATH EVENT - Throw Aesthetics
+// ============================================
+
+EntityDeathEvents.event(event => {
+    if (event.entity.type === 'minecraft:witch') {
+
+        // Remove the potion that witches throw on death
+        event.entity.setItem(null)
+
+        // 30% chance to throw aesthetic effect instead
+        if (Math.random() < 0.3) {
+            const level = event.entity.level
+            const x = event.entity.x
+            const y = event.entity.y
+            const z = event.entity.z
+
+            // Spawn splash potion entity (visual effect only)
+            level.createEntity('minecraft:potion', x, y + 1, z)
+
+            // Drop tech-based items instead of potions
+            // Weighted random drops
+            const roll = Math.random()
+
+            if (roll < 0.4) {
+                // 40% chance: Glowstone Dust (bioluminescent material)
+                level.spawnEntity('minecraft:item', x, y, z, {
+                    Item: { id: 'kubejs:glowstone_dust', Count: 2 + Math.floor(Math.random() * 3) }
+                })
+            } else if (roll < 0.7) {
+                // 30% chance: Redstone (tech component)
+                level.spawnEntity('minecraft:item', x, y, z, {
+                    Item: { id: 'minecraft:redstone', Count: 1 + Math.floor(Math.random() * 3) }
+                })
+            } else {
+                // 30% chance: Spider Eye (tech material)
+                level.spawnEntity('minecraft:item', x, y, z, {
+                    Item: { id: 'minecraft:spider_eye', Count: 1 + Math.floor(Math.random() * 2) }
+                })
+            }
+        }
+    }
+})
+
+// ============================================
+// WITCH LOOT TABLE MODIFICATION
+// ============================================
+
+LootEvent.modify(event => {
+
+    console.log('VoidCore: Modifying witch loot tables...')
+
+    // Remove all potions from witch loot
+    event.modifyLootTable('minecraft:entities/witch', table => {
+        table.removeEntry(entry => {
+            const item = entry.getItem()
+            return item && (item.includes('potion') ||
+                            item.includes('splash_potion') ||
+                            item.includes('lingering_potion') ||
+                            item.includes('glass_bottle'))
+        })
+    })
+
+    // KEEP enchanted book drops! They are rare "ancient blueprints"
+    // Witches are scholars who study forbidden knowledge...
+    // Their books contain research papers for tech upgrades!
+
+    // Add tech-based drops to witch loot
+    event.modifyLootTable('minecraft:entities/witch', table => {
+        table.addPool(pool => {
+            // Glowstone Dust (bioluminescent tech material) - 30% chance
+            pool.addItem('kubejs:glowstone_dust', 2, 6)
+                .addCondition('minecraft:random_chance', 0.3)
+                .addCondition('minecraft:survives_explosion')
+
+            // Redstone (tech component) - 40% chance
+            pool.addItem('minecraft:redstone', 1, 4)
+                .addCondition('minecraft:random_chance', 0.4)
+                .addCondition('minecraft:survives_explosion')
+
+            // Spider Eye (tech material) - 50% chance
+            pool.addItem('minecraft:spider_eye', 1, 2)
+                .addCondition('minecraft:random_chance', 0.5)
+                .addCondition('minecraft:survives_explosion')
+
+            // Sugar (tech material) - 30% chance
+            pool.addItem('minecraft:sugar', 1, 3)
+                .addCondition('minecraft:random_chance', 0.3)
+                .addCondition('minecraft:survives_explosion')
+        })
+    })
+
+    console.log('VoidCore: Witch loot modified - potions removed, tech drops added!')
+    console.log('VoidCore: Enchanted books KEPT from witches - rare ancient blueprints!')
+
+})
+
+console.log('VoidCore: Witch modifications configured!')
+console.log('VoidCore: Witches throw tech aesthetics, not weakness!')
+console.log('VoidCore: Witches may drop enchanted books (ancient blueprints)!')
+console.log('VoidCore: Glowstone replaced with bioluminescent tech!')

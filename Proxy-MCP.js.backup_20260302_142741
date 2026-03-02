@@ -1,0 +1,149 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+const axios = require('axios');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Middleware for JSON parsing
+app.use(bodyParser.json());
+
+// Restricted AI provider/model
+const RESTRICTED_AI = 'restricted-provider';
+
+// AI Provider configurations (matching aiProviderService.ts)
+const PROVIDER_CONFIGS = {
+  GROQCLOUD: {
+    name: 'GROQCLOUD',
+    baseURL: 'https://api.groq.com',
+    model: 'llama-3.3-70b-versatile',
+    endpoint: '/openai/v1/chat/completions',
+    envKey: 'GROQCLOUD_API_KEY',
+  },
+  CEREBRAS: {
+    name: 'CEREBRAS',
+    baseURL: 'https://api.cerebras.ai',
+    model: 'llama-3.3-70b',
+    endpoint: '/v1/chat/completions',
+    envKey: 'CEREBRAS_API_KEY',
+  },
+};
+
+// Get API key from environment
+function getApiKey(provider) {
+  const config = PROVIDER_CONFIGS[provider.toUpperCase()];
+  if (!config) return null;
+  return process.env[config.envKey] || '';
+}
+
+// MCP Discovery Endpoint
+app.get('/mcp', (req, res) => {
+  res.json({
+    name: 'AI Proxy MCP Server',
+    description: 'Forwards AI queries to selected providers via proxy',
+    tools: [
+      {
+        name: 'query_ai',
+        description: 'Send a prompt to an AI provider via the proxy. Returns the response.',
+        parameters: {
+          type: 'object',
+          properties: {
+            provider: { type: 'string', description: 'AI provider (e.g., groqcloud, cerebras)' },
+            model: { type: 'string', description: 'Specific model (optional, uses default if not provided)' },
+            prompt: { type: 'string', description: 'The prompt to send' }
+          },
+          required: ['provider', 'prompt']
+        }
+      }
+    ]
+  });
+});
+
+// MCP Invoke Endpoint
+app.post('/mcp/invoke', async (req, res) => {
+  const { tool, parameters } = req.body;
+
+  if (tool !== 'query_ai') {
+    return res.status(400).json({ error: 'Unknown tool' });
+  }
+
+  const { provider, model, prompt } = parameters;
+  const providerUpper = provider.toUpperCase();
+
+  // Block restricted AI
+  if (provider === RESTRICTED_AI || (model && model.includes(RESTRICTED_AI))) {
+    return res.status(403).json({ error: 'Access to this AI is restricted via MCP' });
+  }
+
+  // Check if provider is supported
+  const config = PROVIDER_CONFIGS[providerUpper];
+  if (!config) {
+    return res.status(400).json({ error: `Unsupported provider: ${provider}. Supported: groqcloud, cerebras` });
+  }
+
+  // Get API key
+  const apiKey = getApiKey(provider);
+  if (!apiKey) {
+    return res.status(500).json({ error: `API key not found for provider: ${provider}. Set ${config.envKey} environment variable.` });
+  }
+
+  try {
+    // Make OpenAI-compatible request to the provider
+    const response = await axios.post(
+      `${config.baseURL}${config.endpoint}`,
+      {
+        model: model || config.model,
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2048,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        timeout: 30000,
+      }
+    );
+
+    // Extract the response text
+    const responseText = response.data?.choices?.[0]?.message?.content || '';
+
+    res.json({
+      result: {
+        response: responseText,
+        provider: providerUpper,
+        model: model || config.model,
+        usage: response.data?.usage,
+      }
+    });
+  } catch (error) {
+    const errorMsg = error.response
+      ? `API error ${error.response.status}: ${JSON.stringify(error.response.data)}`
+      : error.message;
+    res.status(500).json({ error: `Proxy error: ${errorMsg}` });
+  }
+});
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.send('MCP Server Running');
+});
+
+// Status endpoint - check which providers are configured
+app.get('/status', (req, res) => {
+  const status = {};
+  for (const [key, config] of Object.entries(PROVIDER_CONFIGS)) {
+    status[key] = {
+      configured: !!process.env[config.envKey],
+      model: config.model,
+      baseURL: config.baseURL,
+    };
+  }
+  res.json(status);
+});
+
+app.listen(port, () => {
+  console.log(`MCP Server listening on port ${port}`);
+});
