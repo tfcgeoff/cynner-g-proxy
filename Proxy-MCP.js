@@ -586,11 +586,12 @@ app.get('/status', (req, res) => {
 // ============================================================================
 
 // API Key authentication middleware
-const CLIENT_API_KEY = process.env.MCP_PROXY_API_KEY || 'DC_API_FBv15A4erXjE8eQXc75qbJU1WHcsw77XF27BHE';
+const CLIENT_API_KEY = process.env.MCP_PROXY_API_KEY || 'MCP_FBv15A4erXjE8eQXc75qbJU1WHcsw77XF27BHE';
+const LEGACY_CLIENT_API_KEY = 'DC_API_FBv15A4erXjE8eQXc75qbJU1WHcsw77XF27BHE';
 
 function authenticateApiKey(req, res, next) {
   const providedKey = req.headers['x-api-key'];
-  if (!providedKey || providedKey !== CLIENT_API_KEY) {
+  if (!providedKey || (providedKey !== CLIENT_API_KEY && providedKey !== LEGACY_CLIENT_API_KEY)) {
     return res.status(401).json({ error: 'Unauthorized: Invalid API key' });
   }
   next();
