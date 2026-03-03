@@ -45,6 +45,7 @@ const PROVIDER_CONFIGS = {
     name: 'GROK',
     baseURL: 'https://api.x.ai/v1',
     model: 'grok-4-fast-reasoning',
+    fallbackModel: 'grok-4-fast-non-reasoning',
     endpoint: '/chat/completions',
     envKey: 'GROK_API_KEY',
   },
@@ -704,6 +705,42 @@ app.post('/api/requests/chat', authenticateApiKey, async (req, res) => {
       },
     });
   } catch (error) {
+    // GROK fallback logic
+    if (providerUpper === 'GROK' && config.fallbackModel && error.response) {
+      const isModelNotFoundError = error.response.status === 400 &&
+        JSON.stringify(error.response.data).includes('Model not found');
+
+      if (isModelNotFoundError) {
+        console.log(`[GROK] Primary model '${config.model}' failed, trying fallback '${config.fallbackModel}'...`);
+
+        try {
+          // Retry with fallback model
+          const fallbackRequestBody = { ...requestBody, model: config.fallbackModel };
+          const fallbackResponse = await axios.post(
+            `${config.baseURL}${config.endpoint}`,
+            fallbackRequestBody,
+            { headers, timeout: 30000 }
+          );
+
+          const responseText = fallbackResponse.data?.choices?.[0]?.message?.content || '';
+          const grokResponseId = fallbackResponse.data?.id;
+
+          console.log(`[GROK] Fallback model '${config.fallbackModel}' succeeded`);
+
+          return res.json({
+            data: {
+              text: responseText,
+              provider: providerUpper,
+              response_id: grokResponseId,
+              fallback_used: config.fallbackModel,
+            },
+          });
+        } catch (fallbackError) {
+          console.log(`[GROK] Fallback model '${config.fallbackModel}' also failed:`, fallbackError.message);
+        }
+      }
+    }
+
     const errorMsg = error.response
       ? `API error ${error.response.status}: ${JSON.stringify(error.response.data)}`
       : error.message;
