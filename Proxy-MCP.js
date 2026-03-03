@@ -44,7 +44,7 @@ const PROVIDER_CONFIGS = {
   GROK: {
     name: 'GROK',
     baseURL: 'https://api.x.ai/v1',
-    model: 'grok-2-1212',
+    model: 'grok-2',
     endpoint: '/chat/completions',
     envKey: 'GROK_API_KEY',
   },
